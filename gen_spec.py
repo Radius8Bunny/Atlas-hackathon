@@ -1,90 +1,42 @@
 import os
 import numpy as np
 import librosa
-import librosa.display
-import matplotlib.pyplot as plt
+from pathlib import Path
 from PIL import Image
 
-SOURCE_FOLDER = "Maharashtra"
-DEST_FOLDER = "Maharashtra_Spectrograms"
-IMG_SIZE = (128, 128)
-CLIP_DURATION = 5    
-SAMPLE_RATE = 22050   
-ADD_NOISE = True      
-
-F_MIN = 500
-F_MAX = 10000 
-
-print(f"reading from: {SOURCE_FOLDER}")
-print(f"saving to: {DEST_FOLDER}")
-
-if not os.path.exists(DEST_FOLDER):
-    os.makedirs(DEST_FOLDER)
-
-species_list = [d for d in os.listdir(SOURCE_FOLDER) if os.path.isdir(os.path.join(SOURCE_FOLDER, d))]
-species_list.sort() 
-
-print("\nIMPORTANT: Class Mapping:")
-for index, species in enumerate(species_list):
-    print(f"{index} : {species}")
-
-for species in species_list:
-    input_path = os.path.join(SOURCE_FOLDER, species)
-    output_path = os.path.join(DEST_FOLDER, species)
+def build_spectrogram(audio_path, output_path, img_size=(224, 224)):
+    y, sr = librosa.load(audio_path, sr=22050)
     
-    if not os.path.exists(output_path):
-        os.makedirs(output_path)
+    duration = librosa.get_duration(y=y, sr=sr)
+    chunk_size = 5 * sr
     
-    wav_files = [f for f in os.listdir(input_path) if f.endswith('.wav')]
-    
-    count = 0
-    for wav_file in wav_files:
-        try:
-            file_path = os.path.join(input_path, wav_file)
-            y, sr = librosa.load(file_path, sr=SAMPLE_RATE)
+    for start in range(0, len(y), chunk_size):
+        end = start + chunk_size
+        if end > len(y): break
+        
+        slice_y = y[start:end]
+        # hi-res fft
+        S = librosa.feature.melspectrogram(
+            y=slice_y, sr=sr, n_fft=2048, hop_length=512, n_mels=128, fmin=400, fmax=10000
+        )
+        db = librosa.power_to_db(S, ref=np.max)
+        
+        img = (db - db.min()) / (db.max() - db.min())
+        img = (img * 255).astype(np.uint8)
+        img = np.flip(img, axis=0) 
+        
+        res = Image.fromarray(img).resize(img_size, Image.LANCZOS)
+        res.convert("RGB").save(f"{output_path}_{start}.png")
 
-            chunk_samples = CLIP_DURATION * sr
-            total_duration = librosa.get_duration(y=y, sr=sr)
-            
-            if total_duration < 1:
-                continue
+def run_extraction(raw_dir, target_dir):
+    p = Path(raw_dir)
+    for folder in p.iterdir():
+        if folder.is_dir():
+            out = Path(target_dir) / folder.name
+            out.mkdir(parents=True, exist_ok=True)
+            print(f"Extracting: {folder.name}")
+            for audio in folder.glob("*.wav"):
+                build_spectrogram(audio, out / audio.stem)
 
-            for i in range(0, len(y), chunk_samples):
-                slice_audio = y[i : i + chunk_samples
-                                ]
-                if len(slice_audio) < chunk_samples:
-                    padding = chunk_samples - len(slice_audio)
-                    slice_audio = np.pad(slice_audio, (0, padding), 'constant')
-
-                if ADD_NOISE:
-                    noise = np.random.normal(0, 0.005, len(slice_audio))
-                    slice_audio = slice_audio + noise
-
-                S = librosa.feature.melspectrogram(
-                    y=slice_audio, 
-                    sr=sr, 
-                    n_fft=2048, 
-                    hop_length=512, 
-                    n_mels=128, 
-                    fmin=F_MIN, 
-                    fmax=F_MAX
-                )
-                
-                S_dB = librosa.power_to_db(S, ref=np.max)
-
-                img_data = np.flip(S_dB, axis=0) 
-                
-                img_data = (img_data - img_data.min()) / (img_data.max() - img_data.min())
-                img_data = (img_data * 255).astype(np.uint8)
-                
-                img = Image.fromarray(img_data)
-                img = img.resize(IMG_SIZE, Image.LANCZOS)
-                
-                fname = f"{species}_{wav_file[:-4]}_{i}.png"
-                img.save(os.path.join(output_path, fname))
-                count += 1
-                
-        except Exception as e:
-            print(f"error processing {wav_file}: {e}")
-
-    print(f"DONE: generated {count} spectrograms for {species}.")
+if __name__ == "__main__":
+    run_extraction("Maharashtra", "Maharashtra_Spectrograms")
