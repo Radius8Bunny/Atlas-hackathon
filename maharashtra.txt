@@ -1,0 +1,3 @@
+location = "Maharashtra"
+native_birds = ["Indian Peafowl", "Malabar Whistling Thrush", "Malabar Grey Hornbill", "Coppersmith Barbet"]
+invasive_birds = ["House Crow", "Common Myna"]
