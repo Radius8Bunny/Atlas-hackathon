@@ -69,7 +69,44 @@ class XC:
 API_KEY = "b1bd63fa57bf57fa32fec5fc31e4da44b4f66dd4"
 
 birds_to_get = [
-    "Malabar Grey Hornbill"
+    # "Bay-backed Shrike",
+    # "Brahminy Kite",
+    # "Chestnut-bellied Sandgrouse",
+    # "Common Woodshrike",
+    # "Demoiselle Crane",
+    # "Dusky Eagle-Owl",
+    # "Forest Wagtail",
+    # "Great Grey Shrike", # f
+    # "Great Hornbill",
+    # "Green-crowned Warbler",
+    # "Himalayan Rubythroat",
+    # "Indian Blue Robin",
+    # "Indian Paradise Flycatcher", # f
+    # "Indian stone-curlew", # f
+    # "Kentish Plover",
+    # "Little Bunting",
+    # "Orange-headed thrush",  # f
+    # "Pied Bush Chat", # f
+    # "Singing bush lark", # f
+    # "Small Minivet",
+    # "Streaked Weaver",
+    # "Thick-billed Flowerpecker",
+    # "Tytler's Leaf Warbler",
+    # "Velvet-fronted Nuthatch",
+    # "Yellow-crowned woodpecker" # f
+    "Asian Koel",
+    "Black Kite",
+    "Common Rosefinch",
+    "Greater Coucal",
+    "Hypocolius",
+    "Indian Golden Oriole",
+    "Indian Pied Starling",
+    "Indian Pond-Heron",
+    "Rosy Starling",
+    "Rufous Treepie",
+    "White-rumped Munia",
+    "White-rumped Vulture",
+    "Yellow-legged Buttonquail"
 ]
 scraper = XC(api_key=API_KEY)
 

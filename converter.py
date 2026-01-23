@@ -1,12 +1,16 @@
 import os
 import subprocess
 
-raw_dir = "./bird_raw_data"
-wav_dir = "./bird_raw_data_wav"
+# raw_dir = "bird_raw_data"
+# wav_dir = "bird_raw_data_wav"
+
+raw_dir = "test"
+wav_dir = "test_wav"
 
 if not os.path.exists(wav_dir):
     os.makedirs(wav_dir)
 
+# keep subfolders in folder
 folders = [d for d in os.listdir(raw_dir) if os.path.isdir(os.path.join(raw_dir, d))]
 
 for fol in folders:
@@ -17,7 +21,6 @@ for fol in folders:
     os.makedirs(out_p, exist_ok=True)
     
     files = [f for f in os.listdir(in_p) if f.endswith(".mp3")]
-    
     for i, f_name in enumerate(files):
         mp3_file = os.path.join(in_p, f_name)
         wav_name = f_name.replace(".mp3", ".wav")
